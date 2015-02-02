@@ -1,0 +1,31 @@
+AvrBuild.bat
+*.a
+*.acy
+*.atsuo
+*.avrsuo
+*.aws
+*.cfg
+*.d
+*.dep
+*.depend
+*.i
+*.layout
+*.log
+*.lss
+*.lst
+*.map
+*.mk
+*.o
+*.obj
+*.srec
+*.suo
+*.sym
+*.tmp
+*.xml
+*.xslt
+
+# AVR programming files
+
+# *.eep
+# *.elf
+# *.hex
