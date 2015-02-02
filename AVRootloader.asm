@@ -14,7 +14,7 @@
 ;.include "m128def.inc"					; ATmega128
 ;.include "m128RFA1def.inc"				; ATmega128RFA1
 ;.include "m161def.inc"					; ATmega161
-;.include "m162def.inc"					; ATmega162
+.include "m162def.inc"					; ATmega162
 ;.include "m163def.inc"					; ATmega163
 ;.include "m164Adef.inc"				; ATmega164A
 ;.include "m164PAdef.inc"				; ATmega164PA
@@ -198,24 +198,24 @@
 										; with these bootmodes you can shorten startup time for application
 
 .equ	UseWDR				= 1			; Watchdog support (2 sec timeout, remember to deactivate WDT in your application if not needed)
-.equ	UseSaveMCUSR		= 0			; save MCUSR on stack (RAMEND) for access by application (on UseWDR=1 MCUSR must be cleared)
+.equ	UseSaveMCUSR		= 1			; save MCUSR on stack (RAMEND) for access by application (on UseWDR=1 MCUSR must be cleared)
 
-.equ	UseE2Write			= 0			; EEPROM write command (have implicit verify)
-.equ	UseE2Read			= 0			; EEPROM read command
+.equ	UseE2Write			= 1			; EEPROM write command (have implicit verify)
+.equ	UseE2Read			= 1			; EEPROM read command
 
 .equ	UseCrypt			= 0			; cryptography (crypt.inc)
 .equ	UseCryptFLASH   	= 1			; explicit use of cryptography for writing to FLASH
 .equ	UseCryptE2			= 1			; explicit use of cryptography for writing to EEPROM
 
 .equ	UseVerify			= 0			; Verify FLASH command (FLASH write/erase have implicit verify, can be deactivated)
-.equ	UseVersioning		= 0			; Versioning for application software (stored 4/6 bytes before BootStart)
-.equ	UseSRAM				= 0			; SRAM read/write commands (attention! can be a security risk)
+.equ	UseVersioning		= 1			; Versioning for application software (stored 4/6 bytes before BootStart)
+.equ	UseSRAM				= 1			; SRAM read/write commands (attention! can be a security risk)
 
-.equ	UseSpecialBootVect	= 0			; use a rjmp BootStart at end of FLASH to start bootloader from application code
-.equ	UseSpecialWrite 	= 0			; special function "write_flash" to reprogram FLASH
-.equ	UseSpecialWriteBoot = 0			; "write_flash" can write to bootloader section with magic code, only usefull if SPM is allowed by lockbit fuses in BLS
-.equ	UseSpecialRead		= 0			; special function "read_flash" to read from FLASH
-.equ	UseSpecialMsg		= 0			; special function to return address and size of BootMsg
+.equ	UseSpecialBootVect	= 1			; use a rjmp BootStart at end of FLASH to start bootloader from application code
+.equ	UseSpecialWrite 	= 1			; special function "write_flash" to reprogram FLASH
+.equ	UseSpecialWriteBoot = 1			; "write_flash" can write to bootloader section with magic code, only usefull if SPM is allowed by lockbit fuses in BLS
+.equ	UseSpecialRead		= 1			; special function "read_flash" to read from FLASH
+.equ	UseSpecialMsg		= 1			; special function to return address and size of BootMsg
 										; look into AVRootloader.h and M162 test project in branch test for usage of special funcs
 
 .equ	UseAutobaud			= 1			; automatic Baudrate detection
@@ -224,24 +224,24 @@
 										; Otherwise the timeout BootDelay defines an overall timeout for connection.
 
 .equ	UseUartInvert		= 0			; invert UART levels (for RS232 drivers such as MAX232)
-.equ	UseRS485			= 0			; activate RS-485 Data Enable pin
+.equ	UseRS485			= 1			; activate RS-485 Data Enable pin
 .equ	UseRS485Invert		= 0			; inverted logic of RS-485 DE pin (HIHGH for receive, LOW for transmit)
 
-.equ	RX_PORT				= PORTB		; Receive port and pin
-.equ	RX					= PB0
-.equ	TX_PORT				= PORTB		; Transmit port and pin
-.equ	TX					= PB1
+.equ	RX_PORT				= PORTD		; Receive port and pin
+.equ	RX					= PD0
+.equ	TX_PORT				= PORTD		; Transmit port and pin
+.equ	TX					= PD0
 
 .if UseRS485
-.equ	DE_PORT				= PORTB		; DE enable pin of RS-485
-.equ	DE					= PB2		; must be only set if RS485 DE is used
+.equ	DE_PORT				= PORTE		; DE enable pin of RS-485
+.equ	DE					= PE0		; must be only set if RS485 DE is used
 .endif
 
 .set	XTAL				= 8000000	;
 .set	BootDelay			= XTAL/4	; about 250ms (don't set to fast to avoid connection problems)
 .set	BootBaudrate		= 115200	; only used if no Baudrate detection activated, XTAL is than important
 .set	BootVersion			= 6			; Version 6 (must be not changed)
-.set	BootCodeSize		= 0		; set to 0, compile and set to value in [.cseg] Used, compile again
+.set	BootCodeSize		= 724		; set to 0, compile and set to value in [.cseg] Used, compile again
 										; after this step cseg used is +2 bytes greater, ignore it (AVRStudio 4.16 bugfix)
 
 ;.equ	RWWSRE				= 4			; activate for ATmega162 in ATmega161 compatibility mode
@@ -829,16 +829,18 @@ wait1:	tx_1										; 1
 
 
 BootSign:	.db		"BOOTLOADER"											; if you change it then change sign in AVRootloader.ini also
-BootMsg:	;.db		"(c) 201 "											; your own message goes here, must be shorter than 253 chars
+BootMsg:	;.db		"(c) 2009 HR"											; your own message goes here, must be shorter than 253 chars
 BootInfo:	.db		SIGNATURE_001, SIGNATURE_002, BootVersion, BootPages 	; must not be changed
 
 .if UseCrypt
 ; create BootKey with AVRootloader.exe "make password" button
 ; following bytes should be kept secret and chosen randomly, 128 Bit Password, first 32 bits are used as Signature
-BootKey:
+BootKey:	.db		$70,$06,$C8,$F7,$06,$AD,$AE,$04,$EE,$83,$3D,$81,$50,$3F,$31,$DC
 .endif ; .if UseCrypt
 
 
 .include "Special.inc"
 
 .endif ; .ifndef PageSize  -> end of source
+
+
